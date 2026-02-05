@@ -29,7 +29,7 @@ if not os.path.exists(PDF_FOLDER):
     os.makedirs(PDF_FOLDER)
 
 # URL del Escudo de la UCE (Transparente) para usar en la app
-LOGO_URL = "LOGOUCE.png"
+LOGO_URL = "UCELOGO.png"
 
 # --- 2. FUNCIONES DE LÓGICA (Backend - Sin Cambios Importantes) ---
 
@@ -211,3 +211,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
