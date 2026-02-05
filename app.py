@@ -29,7 +29,7 @@ if not os.path.exists(PDF_FOLDER):
     os.makedirs(PDF_FOLDER)
 
 # URL del Escudo de la UCE (Transparente) para usar en la app
-LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Escudo_de_la_Universidad_Central_del_Ecuador.svg/1200px-Escudo_de_la_Universidad_Central_del_Ecuador.svg.png"
+LOGO_URL = "LOGOUCE.png"
 
 # --- 2. FUNCIONES DE LÓGICA (Backend - Sin Cambios Importantes) ---
 
@@ -209,4 +209,5 @@ def main():
         interfaz_chat()
 
 if __name__ == "__main__":
+
     main()
