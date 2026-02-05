@@ -11,7 +11,7 @@ import re
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
-# Configuración de página: Título UCE e ícono de libro
+# Configuración de página
 st.set_page_config(
     page_title="Asistente Académico UCE", 
     page_icon="🏛️", 
@@ -28,7 +28,7 @@ PDF_FOLDER = 'archivos_pdf'
 if not os.path.exists(PDF_FOLDER):
     os.makedirs(PDF_FOLDER)
 
-# URL del Escudo (Usando el nombre que tú definiste)
+# Logo UCE
 LOGO_URL = "UCELOGO.png"
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) ---
@@ -94,10 +94,6 @@ def buscar_informacion(pregunta, textos, fuentes):
 # --- 3. DISEÑO VISUAL (Footer Personalizado) ---
 
 def footer_personalizado():
-    """
-    Esta función inyecta CSS para fijar los créditos en la parte inferior,
-    reemplazando visualmente el disclaimer estándar de Streamlit/Gemini.
-    """
     estilos = """
     <style>
         .footer-credits {
@@ -110,25 +106,23 @@ def footer_personalizado():
             text-align: center;
             font-size: 13px;
             padding: 12px;
-            border-top: 2px solid #C59200; /* Línea dorada UCE */
+            border-top: 2px solid #C59200;
             z-index: 9999;
             font-family: sans-serif;
             box-shadow: 0px -2px 5px rgba(0,0,0,0.1);
         }
         .footer-names {
             font-weight: bold;
-            color: #002F6C; /* Azul UCE */
+            color: #002F6C;
             margin-bottom: 4px;
         }
         .footer-tech {
             font-size: 11px;
             color: #666;
         }
-        /* Añadir espacio al final de la página para que el footer no tape el chat */
         div[data-testid="stBottom"] {
             padding-bottom: 70px;
         }
-        /* Ocultar el footer estándar de Streamlit si aparece */
         footer {visibility: hidden;}
     </style>
 
@@ -143,14 +137,14 @@ def footer_personalizado():
     """
     st.markdown(estilos, unsafe_allow_html=True)
 
-# --- 4. INTERFACES GRÁFICAS (Adaptadas a la UCE) ---
+# --- 4. INTERFACES GRÁFICAS ---
 
 def sidebar_uce():
     with st.sidebar:
         try:
             st.image(LOGO_URL, width=150)
         except:
-            st.header("UCE") # Fallback si no carga la imagen
+            st.header("UCE")
             
         st.markdown("## Universidad Central del Ecuador")
         st.markdown("**Asistente Inteligente de Facultad**")
@@ -195,12 +189,11 @@ def interfaz_gestor_archivos():
                     st.toast(f"Documento eliminado: {f}")
                     st.rerun()
     
-    # Inyectamos el footer también aquí
     footer_personalizado()
 
 def interfaz_chat():
     st.header("💬 Asistente Académico UCE")
-    st.markdown("Hola, estudiante de la Central. Estoy conectado a la bibliografía del curso para responder tus dudas.")
+    st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.")
     
     modelo, status = conseguir_modelo_disponible()
     if not modelo:
@@ -208,8 +201,17 @@ def interfaz_chat():
         st.stop()
     
     archivos = os.listdir(PDF_FOLDER)
+    
+    # --- CAMBIO REALIZADO AQUÍ ---
     if not archivos:
-        st.warning("⚠️ La bibliografía está vacía. Solo puedo responder preguntas generales.")
+        st.info("""
+        **👋 ¡Bienvenido al Chat de Ingeniería!**
+        
+        Actualmente no hay bibliografía cargada en el sistema. Tienes dos opciones:
+        1. **Chatear libremente:** Puedo responder preguntas usando mi conocimiento general.
+        2. **Cargar Material:** Ve a la pestaña **"📂 Gestión de Bibliografía"** para subir los PDFs del curso.
+        """)
+    # -----------------------------
     
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -218,8 +220,6 @@ def interfaz_chat():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # --- LLAMADA AL FOOTER ---
-    # Lo llamamos antes del input para asegurar que el CSS se cargue
     footer_personalizado()
 
     if prompt := st.chat_input("¿En qué puedo ayudarte hoy?"):
@@ -235,7 +235,6 @@ def interfaz_chat():
                 textos, fuentes = leer_pdfs_locales()
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes)
                 
-                # --- PROMPT PERSONALIZADO UCE ---
                 prompt_sistema = f"""
                 Actúa como un tutor académico de la Universidad Central del Ecuador (UCE).
                 Tu tono debe ser formal, académico pero cercano y motivador (estilo "Omnium Potentior Est Sapientia").
