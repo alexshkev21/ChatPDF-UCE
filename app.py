@@ -13,8 +13,8 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 # Configuración de página
 st.set_page_config(
-    page_title="Asistente Académico UCE", 
-    page_icon="🏛️", 
+    page_title="Sistemas de Información UCE", 
+    page_icon="💻", 
     layout="wide"
 )
 
@@ -131,35 +131,42 @@ def footer_personalizado():
             Hecho por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
         </div>
         <div class="footer-tech">
-            Proyecto Académico | Powered by Google Gemini API | Algoritmos: TF-IDF, Cosine Similarity & RAG Architecture.
+            Facultad de Ingeniería y Ciencias Aplicadas | Carrera de Sistemas de Información | UCE 2026
         </div>
     </div>
     """
     st.markdown(estilos, unsafe_allow_html=True)
 
-# --- 4. INTERFACES GRÁFICAS ---
+# --- 4. INTERFACES GRÁFICAS (Adaptadas a la FICA - UCE) ---
 
 def sidebar_uce():
     with st.sidebar:
         try:
-            st.image(LOGO_URL, width=150)
+            st.image(LOGO_URL, width=140)
         except:
             st.header("UCE")
             
-        st.markdown("## Universidad Central del Ecuador")
-        st.markdown("**Asistente Inteligente de Facultad**")
+        # --- CAMBIO: Identidad de la Facultad y Carrera ---
+        st.markdown("""
+        <div style="text-align: left">
+            <h3 style="color: #002F6C; font-size: 18px; margin-bottom: 0;">FICA</h3>
+            <p style="font-size: 14px; margin-top: 0;"><b>Facultad de Ingeniería y Ciencias Aplicadas</b></p>
+            <p style="font-size: 13px; color: #555;"><i>Carrera de Sistemas de Información</i></p>
+        </div>
+        """, unsafe_allow_html=True)
+        # --------------------------------------------------
+
         st.divider()
-        
-        st.title("Menú Principal")
-        opcion = st.radio("Selecciona una opción:", ["💬 Chat Estudiantil", "📂 Gestión de Bibliografía"])
+        st.title("Navegación")
+        opcion = st.radio("Selecciona una opción:", ["💬 Tutor Virtual", "📂 Gestión Documental"])
         
         st.divider()
-        st.caption("© 2026 UCE - Ingeniería en Sistemas")
+        st.caption("© 2026 UCE - Sistemas")
         return opcion
 
 def interfaz_gestor_archivos():
-    st.header("📂 Gestión de Bibliografía UCE")
-    st.info("Sube aquí los sílabos, libros o papers para que los estudiantes puedan consultarlos.")
+    st.header("📂 Gestión Documental - Sistemas de Información")
+    st.info("Carga aquí papers técnicos, sílabos de programación o libros de ingeniería.")
     st.markdown("---")
     
     col1, col2 = st.columns([1, 2])
@@ -172,28 +179,28 @@ def interfaz_gestor_archivos():
                 for file in uploaded_files:
                     guardar_archivo(file)
                     contador += 1
-                st.success(f"✅ {contador} documentos añadidos a la base de conocimiento.")
+                st.success(f"✅ {contador} archivos indexados en el sistema.")
                 st.rerun()
 
     with col2:
-        st.subheader("📚 Documentos Disponibles:")
+        st.subheader("📚 Repositorio Actual:")
         archivos = os.listdir(PDF_FOLDER)
         if not archivos:
-            st.warning("No hay material cargado aún.")
+            st.warning("Repositorio vacío.")
         else:
             for f in archivos:
                 c1, c2 = st.columns([4, 1])
                 c1.text(f"📄 {f}")
                 if c2.button("🗑️", key=f, help="Borrar"):
                     eliminar_archivo(f)
-                    st.toast(f"Documento eliminado: {f}")
+                    st.toast(f"Eliminado: {f}")
                     st.rerun()
     
     footer_personalizado()
 
 def interfaz_chat():
-    st.header("💬 Asistente Académico UCE")
-    st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.")
+    st.header("💬 Tutor Virtual - Sistemas de Información")
+    st.caption("Asistente experto en ingeniería de software y materias de la carrera.")
     
     modelo, status = conseguir_modelo_disponible()
     if not modelo:
@@ -202,16 +209,14 @@ def interfaz_chat():
     
     archivos = os.listdir(PDF_FOLDER)
     
-    # --- CAMBIO REALIZADO AQUÍ ---
     if not archivos:
         st.info("""
-        **👋 ¡Bienvenido al Chat de Ingeniería!**
+        **👋 Bienvenido, futuro colega.**
         
-        Actualmente no hay bibliografía cargada en el sistema. Tienes dos opciones:
-        1. **Chatear libremente:** Puedo responder preguntas usando mi conocimiento general.
-        2. **Cargar Material:** Ve a la pestaña **"📂 Gestión de Bibliografía"** para subir los PDFs del curso.
+        El repositorio de la materia está vacío por el momento.
+        * Puedes hacerme consultas generales sobre **Programación, Bases de Datos o Arquitectura de Software**.
+        * O carga el sílabo en la pestaña **"📂 Gestión Documental"**.
         """)
-    # -----------------------------
     
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -222,32 +227,36 @@ def interfaz_chat():
 
     footer_personalizado()
 
-    if prompt := st.chat_input("¿En qué puedo ayudarte hoy?"):
+    if prompt := st.chat_input("Escribe tu consulta técnica aquí..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
             placeholder = st.empty()
-            placeholder.markdown("🔵 *Consultando base de datos UCE...*")
+            placeholder.markdown("🔵 *Analizando contexto académico...*")
             
             try:
                 textos, fuentes = leer_pdfs_locales()
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes)
                 
+                # --- PROMPT ESPECIALIZADO EN SISTEMAS ---
                 prompt_sistema = f"""
-                Actúa como un tutor académico de la Universidad Central del Ecuador (UCE).
-                Tu tono debe ser formal, académico pero cercano y motivador (estilo "Omnium Potentior Est Sapientia").
+                Actúa como un profesor experto de la carrera de Sistemas de Información de la Universidad Central del Ecuador (FICA).
                 
-                CONTEXTO BIBLIOGRÁFICO:
+                TU PERFIL:
+                - Eres técnico, preciso y fomentas las buenas prácticas de ingeniería.
+                - Usas terminología adecuada (Algoritmos, Estructuras de Datos, Ingeniería de Software).
+                - Tu tono es académico pero motivador.
+                
+                CONTEXTO RECUPERADO DE LOS ARCHIVOS:
                 {contexto_pdf}
                 
-                INSTRUCCIONES:
-                1. Si la respuesta está en los documentos, explícala con claridad y cita la fuente.
-                2. Si no está, usa tu conocimiento general para guiar al estudiante.
-                3. Trata al usuario como "compañero" o "estudiante".
+                PREGUNTA DEL ESTUDIANTE: {prompt}
                 
-                PREGUNTA: {prompt}
+                INSTRUCCIONES:
+                1. Basa tu respuesta estrictamente en el contexto si la información existe ahí. Cita la fuente.
+                2. Si el contexto no es suficiente, complementa con tu conocimiento experto en Sistemas.
                 """
                 
                 model = genai.GenerativeModel(modelo)
@@ -264,12 +273,11 @@ def interfaz_chat():
 def main():
     opcion = sidebar_uce()
 
-    if opcion == "📂 Gestión de Bibliografía":
+    if opcion == "📂 Gestión Documental":
         interfaz_gestor_archivos()
-    elif opcion == "💬 Chat Estudiantil":
+    elif opcion == "💬 Tutor Virtual":
         interfaz_chat()
 
 if __name__ == "__main__":
     main()
-
 
