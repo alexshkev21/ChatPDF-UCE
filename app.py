@@ -65,13 +65,20 @@ def eliminar_archivo(nombre_archivo):
     if os.path.exists(ruta):
         os.remove(ruta)
 
+# --- OPTIMIZACIÓN DE VELOCIDAD (CACHÉ) ---
+@st.cache_resource
 def leer_pdfs_locales():
     textos, fuentes = [], []
+    # Verificación de seguridad por si la carpeta no existe
+    if not os.path.exists(PDF_FOLDER): return [], []
+
     archivos = [f for f in os.listdir(PDF_FOLDER) if f.endswith('.pdf')]
     if not archivos: return [], []
+    
     for archivo in archivos:
         try:
-            reader = PyPDF2.PdfReader(os.path.join(PDF_FOLDER, archivo))
+            ruta_completa = os.path.join(PDF_FOLDER, archivo)
+            reader = PyPDF2.PdfReader(ruta_completa)
             for i, page in enumerate(reader.pages):
                 texto = page.extract_text()
                 if texto:
@@ -240,6 +247,8 @@ def interfaz_gestor_archivos():
                 for file in uploaded_files: 
                     guardar_archivo(file) 
                     contador += 1 
+                # Limpiamos caché para que el bot vea los nuevos archivos
+                leer_pdfs_locales.clear()
                 st.success(f"✅ {contador} documentos aprendidos por el sistema.") 
                 st.rerun() 
     with col2: 
@@ -253,6 +262,8 @@ def interfaz_gestor_archivos():
                 c1.text(f"📄 {f}") 
                 if c2.button("🗑️", key=f, help="Borrar"): 
                     eliminar_archivo(f) 
+                    # Limpiamos caché para que el bot olvide los archivos
+                    leer_pdfs_locales.clear()
                     st.toast(f"Olvidando: {f}") 
                     st.rerun() 
 
@@ -279,15 +290,15 @@ def interfaz_chat():
         st.error(f"Error de conexión: {status}")
         st.stop()
     
-    archivos = os.listdir(PDF_FOLDER)
-    
-    if not archivos:
-        st.info("""
-        **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
-      
-        * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
-        * Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
-        """)
+    # --- MENSAJE DE BIENVENIDA PERMANENTE ---
+    # Ya no hay "if not archivos:", ahora sale SIEMPRE.
+    st.info("""
+    **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
+  
+    * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
+    * Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
+    """)
+    # ----------------------------------------
     
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -314,7 +325,7 @@ def interfaz_chat():
                 textos, fuentes = leer_pdfs_locales()
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes)
                 
-                # --- CAMBIO IMPORTANTE: PERSONALIDAD GENERAL ---
+                # --- PERSONALIDAD: COMPAÑERO UNIVERSITARIO ---
                 prompt_sistema = f"""
                 Tienes una identidad definida: Eres el **Ing. Condoi**.
                 Eres el tutor virtual oficial (un águila/cóndor ingeniero) de la FICA (Facultad de Ingeniería y Ciencias Aplicadas) de la Universidad Central del Ecuador.
