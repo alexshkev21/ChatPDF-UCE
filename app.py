@@ -93,12 +93,11 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Footer + HACK CSS AVATAR) --- 
+# --- 3. DISEÑO VISUAL (Footer + CSS AVATAR) --- 
 
 def footer_personalizado(): 
     estilos = """ 
     <style> 
-        /* Footer fijo abajo */
         .footer-credits { 
             position: fixed; 
             left: 0; 
@@ -128,24 +127,18 @@ def footer_personalizado():
         } 
         footer {visibility: hidden;} 
 
-        /* --- HACK AGRESIVO PARA AGRANDAR AVATAR --- */
-        
-        /* 1. El contenedor del icono */
+        /* CSS para el avatar del chat (lo mantenemos lo más grande posible dentro del límite) */
         [data-testid="stChatMessageAvatar"] {
             width: 85px !important;
             height: 85px !important;
-            border-radius: 50% !important; /* Opcional: hazlo redondo */
-            margin-right: 15px !important; /* Separarlo un poco del texto */
+            border-radius: 50% !important;
+            margin-right: 15px !important;
         }
-        
-        /* 2. La imagen dentro del contenedor */
         [data-testid="stChatMessageAvatar"] img {
             width: 85px !important;
             height: 85px !important;
-            object-fit: contain !important; /* Ajuste para que no se corte */
+            object-fit: contain !important;
         }
-        
-        /* 3. El icono SVG (usuario) también grande para que no desentone */
         [data-testid="stChatMessageAvatar"] svg {
             width: 50px !important;
             height: 50px !important;
@@ -187,12 +180,23 @@ def sidebar_uce():
         return opcion 
 
 def interfaz_gestor_archivos(): 
-    # Inyectamos estilos aquí también por si acaso
+    # Inyectamos estilos 
     footer_personalizado()
     
-    st.header("📂 Gestión de Bibliografía UCE") 
-    st.info("Sube aquí los sílabos, libros o papers para que los estudiantes puedan consultarlos.") 
+    # --- NUEVO ENCABEZADO CON AVATAR PARA GESTIÓN ---
+    col_img, col_txt = st.columns([1, 5])
+    with col_img:
+        if os.path.exists(AVATAR_URL):
+            st.image(AVATAR_URL, width=150) # Tamaño mediano para gestión
+        else:
+            st.markdown("📂")
+            
+    with col_txt:
+        st.header("📂 Gestión de Bibliografía UCE") 
+        st.info("Sube aquí los sílabos, libros o papers para que los estudiantes puedan consultarlos.") 
+    
     st.markdown("---") 
+    # ------------------------------------------------
     
     col1, col2 = st.columns([1, 2]) 
     
@@ -222,15 +226,16 @@ def interfaz_gestor_archivos():
                     st.rerun() 
 
 def interfaz_chat(): 
-    # --- IMPORTANTE: Inyectar estilos AL INICIO para que el CSS cargue antes del chat ---
+    # Inyectar estilos 
     footer_personalizado() 
     
-    # --- CABECERA (Bienvenida con Avatar Grande) ---
-    col_avatar, col_texto = st.columns([1, 5])
+    # --- CABECERA (Bienvenida con Avatar AÚN MÁS GRANDE) ---
+    col_avatar, col_texto = st.columns([1, 4]) # Ajusté columnas para dar espacio
     
     with col_avatar:
         if os.path.exists(AVATAR_URL):
-            st.image(AVATAR_URL, width=200) # Imagen estática de bienvenida
+            # AUMENTADO A 280px (Muy grande y visible)
+            st.image(AVATAR_URL, width=280) 
         else:
             st.markdown("🤖")
             
