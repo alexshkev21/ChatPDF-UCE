@@ -30,7 +30,7 @@ if not os.path.exists(PDF_FOLDER):
 
 # Logo UCE 
 LOGO_URL = "UCELOGO.png"
-# Avatar UCE (Asegúrate de tener esta imagen como PNG transparente)
+# Avatar UCE
 AVATAR_URL = "avatar_uce.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) --- 
@@ -93,7 +93,7 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Footer + HACK AVATAR GRANDE) --- 
+# --- 3. DISEÑO VISUAL (Footer + CSS AVATAR GIGANTE) --- 
 
 def footer_personalizado(): 
     estilos = """ 
@@ -127,21 +127,27 @@ def footer_personalizado():
         } 
         footer {visibility: hidden;} 
 
-        /* --- CÓDIGO CSS PARA AGRANDAR EL AVATAR DEL CHAT --- */
+        /* --- CÓDIGO CSS POTENCIADO PARA AVATAR --- */
+        
+        /* 1. El contenedor del avatar (Círculo/Cuadrado) */
         [data-testid="stChatMessageAvatar"] {
-            width: 5rem !important;   /* Aumentado a 80px */
-            height: 5rem !important;
-            background-color: transparent !important; /* Quitar fondo gris */
+            width: 100px !important;  /* TAMAÑO MUY GRANDE (Antes 30px) */
+            height: 100px !important;
+            background-color: transparent !important;
+            border-radius: 10px !important; /* Opcional: bordes un poco cuadrados */
         }
+        
+        /* 2. La imagen dentro del contenedor */
         [data-testid="stChatMessageAvatar"] img {
-            width: 5rem !important;
-            height: 5rem !important;
-            object-fit: contain;
+            min-width: 100px !important;
+            min-height: 100px !important;
+            object-fit: cover !important; /* Esto ayuda a que llene el espacio */
         }
-        /* Ajustar icono de usuario para que no quede disparejo */
+        
+        /* 3. El icono de usuario (para que no se vea enano al lado del bot) */
         [data-testid="stChatMessageAvatar"] svg {
-            width: 3.5rem !important;
-            height: 3.5rem !important;
+            width: 60px !important;
+            height: 60px !important;
         }
     </style> 
 
@@ -165,13 +171,10 @@ def sidebar_uce():
         except: 
             st.header("UCE") 
             
-        # --- SECCIÓN MODIFICADA: DATOS DE FACULTAD Y CARRERA --- 
         st.markdown("## Universidad Central del Ecuador") 
-        
         st.markdown("### FICA") 
         st.markdown("**Facultad de Ingeniería y Ciencias Aplicadas**") 
         st.markdown("Carrera de Sistemas de Información") 
-        # ------------------------------------------------------- 
         
         st.divider() 
         
@@ -217,11 +220,10 @@ def interfaz_gestor_archivos():
     footer_personalizado() 
 
 def interfaz_chat(): 
-    # --- MODIFICACIÓN: BIENVENIDA CON AVATAR GRANDE Y TEXTO ORIGINAL ---
+    # --- BIENVENIDA ---
     col_avatar, col_texto = st.columns([1, 5])
     
     with col_avatar:
-        # Aquí mostramos el avatar GRANDE (200px) al inicio
         if os.path.exists(AVATAR_URL):
             st.image(AVATAR_URL, width=200) 
         else:
@@ -230,7 +232,6 @@ def interfaz_chat():
     with col_texto:
         st.header("💬 Asistente Académico UCE") 
         st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.") 
-    # -------------------------------------------------------------------
 
     modelo, status = conseguir_modelo_disponible() 
     if not modelo: 
@@ -249,7 +250,10 @@ def interfaz_chat():
     if "messages" not in st.session_state: 
         st.session_state.messages = [] 
 
-    # Lógica de iconos para el chat
+    # --- INYECTAR ESTILOS ANTES DEL CHAT ---
+    footer_personalizado() 
+
+    # Lógica de iconos
     avatar_bot = AVATAR_URL if os.path.exists(AVATAR_URL) else "assistant"
     avatar_user = "👤"
 
@@ -258,8 +262,6 @@ def interfaz_chat():
         
         with st.chat_message(message["role"], avatar=icono): 
             st.markdown(message["content"]) 
-
-    footer_personalizado() 
 
     if prompt := st.chat_input("¿En qué puedo ayudarte hoy?"): 
         st.session_state.messages.append({"role": "user", "content": prompt}) 
