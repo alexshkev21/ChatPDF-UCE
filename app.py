@@ -14,7 +14,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 # Configuración de página 
 st.set_page_config( 
     page_title="Ing. Condoi - UCE", 
-    page_icon="🦅", # Icono de aguila/condor para la pestaña
+    page_icon="🦅", 
     layout="wide" 
 ) 
 
@@ -30,6 +30,8 @@ if not os.path.exists(PDF_FOLDER):
 
 # --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
+
+# CAMBIO CRÍTICO: Asegúrate de que aquí diga .gif
 AVATAR_URL = "avatar_uce.gif" 
 AVATAR_URL_GESTION = "avatar_uce2.png" 
 
@@ -93,12 +95,11 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Hacks CSS Completos) --- 
+# --- 3. DISEÑO VISUAL (Footer + CSS AVATAR) --- 
 
 def footer_personalizado(): 
     estilos = """ 
     <style> 
-        /* Footer fijo */
         .footer-credits { 
             position: fixed; 
             left: 0; 
@@ -145,7 +146,7 @@ def footer_personalizado():
             height: 50px !important;
         }
 
-        /* Traducción del Uploader */
+        /* Traducción Uploader */
         [data-testid="stFileUploader"] section > div > div > span,
         [data-testid="stFileUploader"] section > div > div > small {
             display: none !important;
@@ -204,6 +205,7 @@ def sidebar_uce():
 def interfaz_gestor_archivos(): 
     footer_personalizado()
     
+    # Encabezado Gestión (Avatar 2)
     col_img, col_txt = st.columns([1, 4]) 
     with col_img:
         if os.path.exists(AVATAR_URL_GESTION):
@@ -249,16 +251,17 @@ def interfaz_gestor_archivos():
 def interfaz_chat(): 
     footer_personalizado() 
     
+    # Encabezado Chat (Avatar 1 GIF)
     col_avatar, col_texto = st.columns([1, 4]) 
     
     with col_avatar:
+        # Aquí debe cargar el GIF si existe
         if os.path.exists(AVATAR_URL):
             st.image(AVATAR_URL, width=280) 
         else:
             st.markdown("🤖")
             
     with col_texto:
-        # --- AQUÍ ESTÁ EL CAMBIO DE NOMBRE ---
         st.header("💬 Ing. Condoi") 
         st.caption("Tu Tutor Virtual de la FICA - UCE") 
     
@@ -269,15 +272,15 @@ def interfaz_chat():
     
     archivos = os.listdir(PDF_FOLDER) 
     
-    # --- MENSAJE DE BIENVENIDA PERSONALIZADO ---
     if not archivos: 
         st.info(""" 
         **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
         
-        * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
-        * Si necesitas que revisar/estudiar información específica, ve a **"Gestión de Bibliografía"** y proporciona los archivos.
+        Todavía no tengo documentos en mi memoria para estudiar contigo.
+        
+        * Si quieres conversar sobre ingeniería en general, ¡escribe abajo!
+        * Si necesitas que revise el sílabo, ve a **"Gestión de Bibliografía"** y dame los archivos.
         """) 
-    # -------------------------------------------
     
     if "messages" not in st.session_state: 
         st.session_state.messages = [] 
@@ -303,7 +306,6 @@ def interfaz_chat():
                 textos, fuentes = leer_pdfs_locales() 
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes) 
                 
-                # --- PROMPT DE IDENTIDAD DEL PERSONAJE ---
                 prompt_sistema = f""" 
                 Tienes una identidad definida: Eres el **Ing. Condoi**.
                 Eres el tutor virtual oficial (un águila/cóndor ingeniero) de la FICA (Facultad de Ingeniería y Ciencias Aplicadas) de la Universidad Central del Ecuador.
@@ -335,12 +337,8 @@ def main():
 
     if opcion == "📂 Gestión de Bibliografía": 
         interfaz_gestor_archivos() 
-    elif "Chat" in opcion: # Detecta la opción aunque cambiemos el texto
+    elif "Chat" in opcion: 
         interfaz_chat() 
 
 if __name__ == "__main__": 
     main()
-
-
-
-
