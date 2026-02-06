@@ -275,7 +275,7 @@ def interfaz_chat():
         **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
         
         * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
-        * Si necesitas que revise el sílabo, ve a **"Gestión de Bibliografía"** y dame los archivos.
+        * Si necesitas que revisar/estudiar información específica, ve a **"Gestión de Bibliografía"** y proporciona los archivos.
         """) 
     # -------------------------------------------
     
@@ -340,5 +340,6 @@ def main():
 
 if __name__ == "__main__": 
     main()
+
 
 
