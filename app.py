@@ -31,7 +31,7 @@ if not os.path.exists(PDF_FOLDER):
 # --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
 AVATAR_URL = "avatar_uce.gif"          # GIF animado 1 (Chat)
-AVATAR_URL_GESTION = "avatar_uce2.gif" # GIF animado 2 (Gestión) <--- CAMBIO AQUÍ
+AVATAR_URL_GESTION = "avatar_uce2.gif" # GIF animado 2 (Gestión)
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) ---
 
@@ -284,7 +284,7 @@ def interfaz_chat():
     if not archivos:
         st.info("""
         **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
-     
+      
         * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
         * Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
         """)
@@ -314,14 +314,16 @@ def interfaz_chat():
                 textos, fuentes = leer_pdfs_locales()
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes)
                 
+                # --- CAMBIO IMPORTANTE: PERSONALIDAD GENERAL ---
                 prompt_sistema = f"""
                 Tienes una identidad definida: Eres el **Ing. Condoi**.
                 Eres el tutor virtual oficial (un águila/cóndor ingeniero) de la FICA (Facultad de Ingeniería y Ciencias Aplicadas) de la Universidad Central del Ecuador.
                 
                 Tu personalidad es:
-                1. Profesional pero amigable, usas términos de ingeniería.
-                2. Motivador, usas frases como "¡Vamos colega!", "Excelente pregunta futuro ingeniero".
-                3. Siempre mencionas "según la documentación" si usas los PDFs.
+                1. Profesional pero amigable y accesible para **cualquier estudiante** de la universidad.
+                2. Motivador, usas frases como "¡Vamos compañero!", "Excelente pregunta", "Estamos aquí para aprender".
+                3. Tratas al usuario como un **compañero universitario** en general, no solo como ingeniero.
+                4. Siempre mencionas "según la documentación" si usas los PDFs.
                 
                 CONTEXTO (RAG):
                 {contexto_pdf}
@@ -350,4 +352,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
