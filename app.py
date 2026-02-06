@@ -6,7 +6,7 @@ import PyPDF2
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
-import base64  # <--- IMPORTANTE: Nueva librería para la magia del GIF
+import base64  # Librería clave para los GIFs
 
 # --- 1. CONFIGURACIÓN INICIAL ---
 load_dotenv()
@@ -30,12 +30,12 @@ if not os.path.exists(PDF_FOLDER):
 
 # --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
-AVATAR_URL = "avatar_uce.gif"       # El GIF animado
-AVATAR_URL_GESTION = "avatar_uce2.png" 
+AVATAR_URL = "avatar_uce.gif"          # GIF animado 1 (Chat)
+AVATAR_URL_GESTION = "avatar_uce2.gif" # GIF animado 2 (Gestión) <--- CAMBIO AQUÍ
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) ---
 
-# Función NUEVA para leer imágenes y convertirlas a Base64 (Para que el GIF se mueva sí o sí)
+# Función auxiliar para convertir imágenes a Base64 (Mantiene la animación)
 def get_img_as_base64(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
@@ -99,11 +99,12 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else ""
     except: return ""
 
-# --- 3. DISEÑO VISUAL ---
+# --- 3. DISEÑO VISUAL (Hacks CSS) ---
 
 def footer_personalizado():
     estilos = """
     <style>
+        /* Footer fijo */
         .footer-credits {
             position: fixed;
             left: 0;
@@ -150,7 +151,7 @@ def footer_personalizado():
             height: 50px !important;
         }
 
-        /* Traducción Uploader */
+        /* Traducción Uploader (Hack CSS) */
         [data-testid="stFileUploader"] section > div > div > span,
         [data-testid="stFileUploader"] section > div > div > small {
             display: none !important;
@@ -209,16 +210,20 @@ def interfaz_gestor_archivos():
     footer_personalizado()
     
     col_img, col_txt = st.columns([1, 4]) 
+    
+    # --- ZONA DE AVATAR DE GESTIÓN (ANIMADO CON BASE64) ---
     with col_img:
-        # Aquí usamos st.image normal porque es PNG (avatar_uce2) o estático
         if os.path.exists(AVATAR_URL_GESTION):
-            st.image(AVATAR_URL_GESTION, width=280)
+            # Usamos la técnica Base64 para el segundo GIF
+            img_b64 = get_img_as_base64(AVATAR_URL_GESTION)
+            st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:280px; max-width: 100%;">', unsafe_allow_html=True)
         elif os.path.exists(AVATAR_URL):
-             # Si no hay el 2, usamos el 1 pero con el método HTML por si es GIF
+             # Respaldo con el GIF 1 si falla el 2
             img_b64 = get_img_as_base64(AVATAR_URL)
-            st.markdown(f'<img src="data:image/gif;base64,{img_b64}" width="280">', unsafe_allow_html=True)
+            st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:280px; max-width: 100%;">', unsafe_allow_html=True)
         else:
             st.markdown("📂")
+    # -------------------------------------------------------
             
     with col_txt:
         st.header("📂 Gestión de Bibliografía") 
@@ -256,16 +261,14 @@ def interfaz_chat():
     
     col_avatar, col_texto = st.columns([1, 4])
     
-    # --- ZONA DE BIENVENIDA (Inyección HTML para forzar animación) ---
+    # --- ZONA DE AVATAR DEL CHAT (ANIMADO CON BASE64) ---
     with col_avatar:
         if os.path.exists(AVATAR_URL):
-            # Convertimos la imagen a base64 y la incrustamos como HTML puro
-            # Esto obliga al navegador a renderizar el GIF
             img_b64 = get_img_as_base64(AVATAR_URL)
             st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:280px; max-width: 100%;">', unsafe_allow_html=True)
         else:
             st.markdown("🤖")
-    # ---------------------------------------------------------------
+    # ---------------------------------------------------
             
     with col_texto:
         st.header("💬 Ing. Condoi")
@@ -291,9 +294,7 @@ def interfaz_chat():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Configuración de avatares para el chat
-    # OJO: st.chat_message usa rutas de archivo. Si st.image falló, este podría fallar también.
-    # Pero el encabezado GRANDE ahora sí se moverá seguro.
+    # Configuración de avatares para el chat (Burbujas)
     avatar_bot = AVATAR_URL if os.path.exists(AVATAR_URL) else "assistant"
     avatar_user = "👤"
 
