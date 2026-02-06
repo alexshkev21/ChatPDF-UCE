@@ -30,7 +30,7 @@ if not os.path.exists(PDF_FOLDER):
 
 # Logo UCE 
 LOGO_URL = "UCELOGO.png"
-# Avatar UCE (Asegúrate de tener esta imagen)
+# Avatar UCE (Asegúrate de tener esta imagen como PNG transparente)
 AVATAR_URL = "avatar_uce.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) --- 
@@ -93,7 +93,7 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Footer Personalizado + HACK AVATAR) --- 
+# --- 3. DISEÑO VISUAL (Footer + HACK AVATAR GRANDE) --- 
 
 def footer_personalizado(): 
     estilos = """ 
@@ -126,17 +126,19 @@ def footer_personalizado():
             padding-bottom: 70px; 
         } 
         footer {visibility: hidden;} 
-        
-        /* --- HACK PARA HACER EL AVATAR DEL CHAT MÁS GRANDE --- */
+
+        /* --- CÓDIGO CSS PARA AGRANDAR EL AVATAR DEL CHAT --- */
         [data-testid="stChatMessageAvatar"] {
-            width: 5rem !important;
+            width: 5rem !important;   /* Aumentado a 80px */
             height: 5rem !important;
+            background-color: transparent !important; /* Quitar fondo gris */
         }
         [data-testid="stChatMessageAvatar"] img {
             width: 5rem !important;
             height: 5rem !important;
             object-fit: contain;
         }
+        /* Ajustar icono de usuario para que no quede disparejo */
         [data-testid="stChatMessageAvatar"] svg {
             width: 3.5rem !important;
             height: 3.5rem !important;
@@ -219,13 +221,13 @@ def interfaz_chat():
     col_avatar, col_texto = st.columns([1, 5])
     
     with col_avatar:
+        # Aquí mostramos el avatar GRANDE (200px) al inicio
         if os.path.exists(AVATAR_URL):
-            st.image(AVATAR_URL, width=200) # Avatar grande de bienvenida
+            st.image(AVATAR_URL, width=200) 
         else:
             st.markdown("🤖")
             
     with col_texto:
-        # AQUÍ MANTENEMOS TU TEXTO ORIGINAL EXACTO
         st.header("💬 Asistente Académico UCE") 
         st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.") 
     # -------------------------------------------------------------------
@@ -247,12 +249,11 @@ def interfaz_chat():
     if "messages" not in st.session_state: 
         st.session_state.messages = [] 
 
-    # Lógica de iconos
+    # Lógica de iconos para el chat
     avatar_bot = AVATAR_URL if os.path.exists(AVATAR_URL) else "assistant"
     avatar_user = "👤"
 
     for message in st.session_state.messages: 
-        # Asignamos el icono correcto
         icono = avatar_bot if message["role"] == "assistant" else avatar_user
         
         with st.chat_message(message["role"], avatar=icono): 
