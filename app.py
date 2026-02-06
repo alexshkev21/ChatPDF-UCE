@@ -103,11 +103,9 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else ""
     except: return ""
 
-# --- 3. DISEÑO VISUAL (Hacks CSS) ---
+# --- 3. DISEÑO VISUAL (CSS) ---
 
 def footer_personalizado():
-    # Detectamos si estamos en el chat para aplicar el CSS del input a la derecha
-    # Esto es un truco para que en celular (pantalla pequeña) no se rompa
     estilos = """
     <style>
         .footer-credits {
@@ -125,24 +123,15 @@ def footer_personalizado():
             font-family: sans-serif;
             box-shadow: 0px -2px 5px rgba(0,0,0,0.1);
         }
+        /* Ajuste para que el input no choque con el footer */
         div[data-testid="stBottom"] {
-            padding-bottom: 70px;
+            padding-bottom: 50px; 
         }
-        
-        /* --- TRUCO CSS: MOVER EL INPUT A LA DERECHA --- */
-        @media (min-width: 768px) {
-            /* Solo aplicamos esto en pantallas de PC */
-            div[data-testid="stBottom"] > div {
-                width: 75% !important;  /* Ocupa solo el 75% del ancho */
-                margin-left: 25% !important; /* Se mueve un 25% a la derecha */
-            }
-        }
-        /* ----------------------------------------------- */
 
-        /* CSS Avatar Chat */
+        /* Estilos Avatar Chat Pequeño */
         [data-testid="stChatMessageAvatar"] {
-            width: 70px !important;
-            height: 70px !important;
+            width: 50px !important;
+            height: 50px !important;
             border-radius: 50% !important;
         }
         [data-testid="stChatMessageAvatar"] img {
@@ -165,7 +154,7 @@ def footer_personalizado():
 
     <div class="footer-credits">
         <div style="font-weight: bold; color: #002F6C;">
-            Realizado por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
+            Hecho por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
         </div>
         <div style="font-size: 11px; color: #666;">
             Proyecto Académico | Powered by Google Gemini API
@@ -174,7 +163,6 @@ def footer_personalizado():
     """
     st.markdown(estilos, unsafe_allow_html=True)
 
-# Encabezado Institucional (Logo + Texto)
 def encabezado_institucional():
     col_logo, col_texto = st.columns([1, 6])
     with col_logo:
@@ -202,11 +190,9 @@ def interfaz_gestor_archivos():
     footer_personalizado()
     encabezado_institucional()
     
-    # Diseño Split: Avatar Izquierda | Contenido Derecha
-    col_avatar, col_contenido = st.columns([1, 3]) # Proporción 25% - 75%
+    col_avatar, col_contenido = st.columns([1, 3])
     
     with col_avatar:
-        # Avatar Grande en la izquierda
         if os.path.exists(AVATAR_URL_GESTION):
             img_b64 = get_img_as_base64(AVATAR_URL_GESTION)
             st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:100%; max-width: 350px;">', unsafe_allow_html=True)
@@ -248,66 +234,69 @@ def interfaz_gestor_archivos():
 
 def interfaz_chat():
     footer_personalizado()
-    encabezado_institucional() 
     
-    # --- DISEÑO SPLIT VIEW ---
-    # Creamos dos columnas: Izquierda (Avatar) y Derecha (Todo el chat)
-    # [1, 3] significa que la derecha es 3 veces más grande que la izquierda
-    col_izquierda_avatar, col_derecha_chat = st.columns([1, 3])
+    # --- 1. ENCABEZADO FIJO (Institutional + Avatar Chat Header) ---
+    # Esto siempre se queda arriba
+    encabezado_institucional()
     
-    # 1. Columna Izquierda: SOLO EL AVATAR
-    with col_izquierda_avatar:
-        if os.path.exists(AVATAR_URL):
+    # Creamos un layout para el encabezado del personaje (Avatar + Título)
+    col_head_avatar, col_head_info = st.columns([1, 4])
+    
+    with col_head_avatar:
+         if os.path.exists(AVATAR_URL):
             img_b64 = get_img_as_base64(AVATAR_URL)
-            # Avatar gigante ocupando el ancho de su columna
-            st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:100%; max-width: 400px; margin-top: 20px;">', unsafe_allow_html=True)
-        else:
+            # Avatar un poco más grande en el encabezado
+            st.markdown(f'<img src="data:image/gif;base64,{img_b64}" style="width:180px; max-width: 100%;">', unsafe_allow_html=True)
+         else:
             st.markdown("🤖")
+            
+    with col_head_info:
+        # Título y descripción alineados con el avatar
+        st.markdown("# 💬 Asistente Virtual") 
+        st.markdown("### Ing. Condoi - Tu Tutor Virtual de la FICA")
+    
+    st.markdown("---") # Separador entre el encabezado fijo y el chat
 
-    # 2. Columna Derecha: TODO EL CHAT + HEADER DEL CHAT
-    with col_derecha_chat:
-        st.header("💬 Asistente virtual")
-        st.caption("Tu Tutor Virtual de la FICA - UCE")
-        
-        modelo, status = conseguir_modelo_disponible()
-        if not modelo:
-            st.error(f"Error de conexión: {status}")
-            st.stop()
-        
+    # --- 2. CONTENEDOR DE CHAT CON SCROLL INDEPENDIENTE ---
+    # Aquí está la MAGIA: height=500 crea una caja con scroll interno.
+    contenedor_chat = st.container(height=500, border=False)
+
+    modelo, status = conseguir_modelo_disponible()
+    if not modelo:
+        st.error(f"Error de conexión: {status}")
+        st.stop()
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    # Todo lo que imprimamos dentro de 'with contenedor_chat:' se quedará en la cajita con scroll
+    with contenedor_chat:
+        # Mensaje de bienvenida dentro del flujo del chat
         st.info("""
         **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
         * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
         * Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
         """)
-        
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
 
         avatar_bot = AVATAR_URL if os.path.exists(AVATAR_URL) else "assistant"
         avatar_user = "👤"
 
-        # Pintamos los mensajes DENTRO de la columna derecha
         for message in st.session_state.messages:
             icono = avatar_bot if message["role"] == "assistant" else avatar_user
             with st.chat_message(message["role"], avatar=icono):
                 st.markdown(message["content"])
 
-    # 3. EL INPUT (La barra de escribir)
-    # Nota: st.chat_input siempre se pone abajo.
-    # El CSS en 'footer_personalizado' se encarga de moverlo a la derecha (margin-left: 25%)
+    # --- 3. INPUT (Se queda fijo abajo automáticamente por Streamlit) ---
     if prompt := st.chat_input("Pregúntale al Ing. Condoi..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        # Forzamos recarga para que el mensaje aparezca inmediatamente en la columna derecha
-        st.rerun()
+        st.rerun() # Recargamos para mostrar el mensaje del usuario
 
     # Lógica de respuesta (se ejecuta al recargar)
     if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
-        # Recapturamos el último prompt
         prompt = st.session_state.messages[-1]["content"]
         
-        # Debemos mostrar el "pensando" en la columna DERECHA
-        with col_derecha_chat:
+        # IMPORTANTE: La respuesta también debe imprimirse DENTRO del contenedor
+        with contenedor_chat:
              with st.chat_message("assistant", avatar=avatar_bot):
                 placeholder = st.empty()
                 placeholder.markdown("🦅 *El Ing. Condoi está pensando...*")
@@ -353,4 +342,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
