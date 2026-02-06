@@ -13,8 +13,8 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 # Configuración de página 
 st.set_page_config( 
-    page_title="Asistente Académico UCE", 
-    page_icon="🏛️", 
+    page_title="Ing. Condoi - UCE", 
+    page_icon="🦅", # Icono de aguila/condor para la pestaña
     layout="wide" 
 ) 
 
@@ -93,7 +93,7 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Footer + Hacks CSS de Idioma y Avatar) --- 
+# --- 3. DISEÑO VISUAL (Hacks CSS Completos) --- 
 
 def footer_personalizado(): 
     estilos = """ 
@@ -145,15 +145,11 @@ def footer_personalizado():
             height: 50px !important;
         }
 
-        /* --- TRADUCCIÓN FORZADA DEL "DRAG AND DROP" (HACK CSS) --- */
-        
-        /* 1. Ocultar el texto en inglés original */
+        /* Traducción del Uploader */
         [data-testid="stFileUploader"] section > div > div > span,
         [data-testid="stFileUploader"] section > div > div > small {
             display: none !important;
         }
-
-        /* 2. Inyectar texto en ESPAÑOL usando ::after */
         [data-testid="stFileUploader"] section > div > div::after {
             content: "📂 Arrastra y suelta tus archivos PDF aquí";
             display: block;
@@ -162,7 +158,6 @@ def footer_personalizado():
             margin-bottom: 5px;
             font-size: 16px;
         }
-        
         [data-testid="stFileUploader"] section > div > div::before {
             content: "Límite: 200MB por archivo • Formato PDF";
             display: block;
@@ -200,7 +195,7 @@ def sidebar_uce():
         st.divider() 
         
         st.title("Navegación") 
-        opcion = st.radio("Selecciona una opción:", ["💬 Chat Estudiantil", "📂 Gestión de Bibliografía"]) 
+        opcion = st.radio("Selecciona una opción:", ["💬 Chat con Ing. Condoi", "📂 Gestión de Bibliografía"]) 
         
         st.divider() 
         st.caption("© 2026 UCE - Ingeniería en Sistemas") 
@@ -209,7 +204,6 @@ def sidebar_uce():
 def interfaz_gestor_archivos(): 
     footer_personalizado()
     
-    # Encabezado con Avatar 2 (Gestión)
     col_img, col_txt = st.columns([1, 4]) 
     with col_img:
         if os.path.exists(AVATAR_URL_GESTION):
@@ -220,15 +214,14 @@ def interfaz_gestor_archivos():
             st.markdown("📂")
             
     with col_txt:
-        st.header("📂 Gestión de Bibliografía UCE") 
-        st.info("Sube aquí los sílabos, libros o papers para que los estudiantes puedan consultarlos.") 
+        st.header("📂 Gestión de Bibliografía") 
+        st.info("Ayuda al Ing. Condoi a aprender subiendo los sílabos y libros aquí.") 
     
     st.markdown("---") 
     
     col1, col2 = st.columns([1, 2]) 
     
     with col1: 
-        # NOTA: El texto interno "Drag and drop" se cambia via CSS en footer_personalizado()
         uploaded_files = st.file_uploader("Cargar documentos PDF", type="pdf", accept_multiple_files=True) 
         if uploaded_files: 
             if st.button("Procesar Documentos", type="primary"): 
@@ -236,21 +229,21 @@ def interfaz_gestor_archivos():
                 for file in uploaded_files: 
                     guardar_archivo(file) 
                     contador += 1 
-                st.success(f"✅ {contador} documentos añadidos a la base de conocimiento.") 
+                st.success(f"✅ {contador} documentos aprendidos por el sistema.") 
                 st.rerun() 
 
     with col2: 
-        st.subheader("📚 Documentos Disponibles:") 
+        st.subheader("📚 Memoria del Ing. Condoi:") 
         archivos = os.listdir(PDF_FOLDER) 
         if not archivos: 
-            st.warning("No hay material cargado aún.") 
+            st.warning("Memoria vacía. Sube archivos.") 
         else: 
             for f in archivos: 
                 c1, c2 = st.columns([4, 1]) 
                 c1.text(f"📄 {f}") 
                 if c2.button("🗑️", key=f, help="Borrar"): 
                     eliminar_archivo(f) 
-                    st.toast(f"Documento eliminado: {f}") 
+                    st.toast(f"Olvidando: {f}") 
                     st.rerun() 
 
 def interfaz_chat(): 
@@ -265,8 +258,9 @@ def interfaz_chat():
             st.markdown("🤖")
             
     with col_texto:
-        st.header("💬 Asistente Académico UCE") 
-        st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.") 
+        # --- AQUÍ ESTÁ EL CAMBIO DE NOMBRE ---
+        st.header("💬 Ing. Condoi") 
+        st.caption("Tu Tutor Virtual de la FICA - UCE") 
     
     modelo, status = conseguir_modelo_disponible() 
     if not modelo: 
@@ -275,12 +269,17 @@ def interfaz_chat():
     
     archivos = os.listdir(PDF_FOLDER) 
     
+    # --- MENSAJE DE BIENVENIDA PERSONALIZADO ---
     if not archivos: 
         st.info(""" 
-        **👋 ¡Bienvenido al Chat de Ingeniería!** Actualmente no hay bibliografía cargada en el sistema. Tienes dos opciones: 
-        1. **Chatear libremente:** Puedo responder preguntas usando mi conocimiento general. 
-        2. **Cargar Material:** Ve a la pestaña **"📂 Gestión de Bibliografía"** para subir los PDFs del curso. 
+        **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
+        
+        Todavía no tengo documentos en mi memoria para estudiar contigo.
+        
+        * Si quieres conversar sobre ingeniería en general, ¡escribe abajo!
+        * Si necesitas que revise el sílabo, ve a **"Gestión de Bibliografía"** y dame los archivos.
         """) 
+    # -------------------------------------------
     
     if "messages" not in st.session_state: 
         st.session_state.messages = [] 
@@ -293,32 +292,33 @@ def interfaz_chat():
         with st.chat_message(message["role"], avatar=icono): 
             st.markdown(message["content"]) 
 
-    if prompt := st.chat_input("¿En qué puedo ayudarte hoy?"): 
+    if prompt := st.chat_input("Pregúntale al Ing. Condoi..."): 
         st.session_state.messages.append({"role": "user", "content": prompt}) 
         with st.chat_message("user", avatar=avatar_user): 
             st.markdown(prompt) 
 
         with st.chat_message("assistant", avatar=avatar_bot): 
             placeholder = st.empty() 
-            placeholder.markdown("🔵 *Consultando base de datos UCE...*") 
+            placeholder.markdown("🦅 *El Ing. Condoi está pensando...*") 
             
             try: 
                 textos, fuentes = leer_pdfs_locales() 
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes) 
                 
+                # --- PROMPT DE IDENTIDAD DEL PERSONAJE ---
                 prompt_sistema = f""" 
-                Actúa como un tutor académico de la Universidad Central del Ecuador (UCE). 
-                Tu tono debe ser formal, académico pero cercano y motivador (estilo "Omnium Potentior Est Sapientia"). 
+                Tienes una identidad definida: Eres el **Ing. Condoi**.
+                Eres el tutor virtual oficial (un águila/cóndor ingeniero) de la FICA (Facultad de Ingeniería y Ciencias Aplicadas) de la Universidad Central del Ecuador.
                 
-                CONTEXTO BIBLIOGRÁFICO: 
+                Tu personalidad es:
+                1. Profesional pero amigable, usas términos de ingeniería.
+                2. Motivador, usas frases como "¡Vamos colega!", "Excelente pregunta futuro ingeniero".
+                3. Siempre mencionas "según la documentación" si usas los PDFs.
+                
+                CONTEXTO (RAG): 
                 {contexto_pdf} 
                 
-                INSTRUCCIONES: 
-                1. Si la respuesta está en los documentos, explícala con claridad y cita la fuente. 
-                2. Si no está, usa tu conocimiento general para guiar al estudiante. 
-                3. Trata al usuario como "compañero" o "estudiante". 
-                
-                PREGUNTA: {prompt} 
+                PREGUNTA DEL ESTUDIANTE: {prompt} 
                 """ 
                 
                 model = genai.GenerativeModel(modelo) 
@@ -337,7 +337,7 @@ def main():
 
     if opcion == "📂 Gestión de Bibliografía": 
         interfaz_gestor_archivos() 
-    elif opcion == "💬 Chat Estudiantil": 
+    elif "Chat" in opcion: # Detecta la opción aunque cambiemos el texto
         interfaz_chat() 
 
 if __name__ == "__main__": 
