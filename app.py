@@ -28,10 +28,14 @@ PDF_FOLDER = 'archivos_pdf'
 if not os.path.exists(PDF_FOLDER): 
     os.makedirs(PDF_FOLDER) 
 
-# Logo UCE 
+# --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
-# Avatar UCE
+
+# Avatar 1: Para el CHAT
 AVATAR_URL = "avatar_uce.png" 
+
+# Avatar 2: Para GESTIÓN DE BIBLIOGRAFÍA
+AVATAR_URL_GESTION = "avatar_uce2.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) --- 
 
@@ -127,7 +131,7 @@ def footer_personalizado():
         } 
         footer {visibility: hidden;} 
 
-        /* CSS para mantener el avatar del chat lo más grande posible */
+        /* CSS para el avatar del chat */
         [data-testid="stChatMessageAvatar"] {
             width: 85px !important;
             height: 85px !important;
@@ -180,14 +184,16 @@ def sidebar_uce():
         return opcion 
 
 def interfaz_gestor_archivos(): 
-    # Inyectamos estilos 
     footer_personalizado()
     
-    # --- ENCABEZADO DE GESTIÓN (Avatar IGUAL DE GRANDE: 280px) ---
-    col_img, col_txt = st.columns([1, 4]) # Ajuste de columnas para que quepa bien
+    # --- ENCABEZADO CON AVATAR 2 (GESTIÓN) ---
+    col_img, col_txt = st.columns([1, 4]) 
     with col_img:
-        if os.path.exists(AVATAR_URL):
-            st.image(AVATAR_URL, width=280) # ¡Ahora es igual de grande!
+        # Aquí buscamos "avatar_uce2.png"
+        if os.path.exists(AVATAR_URL_GESTION):
+            st.image(AVATAR_URL_GESTION, width=280) 
+        elif os.path.exists(AVATAR_URL):
+            st.image(AVATAR_URL, width=280) # Respaldo si no existe la 2
         else:
             st.markdown("📂")
             
@@ -226,13 +232,13 @@ def interfaz_gestor_archivos():
                     st.rerun() 
 
 def interfaz_chat(): 
-    # Inyectar estilos 
     footer_personalizado() 
     
-    # --- CABECERA DE CHAT (Avatar Grande: 280px) ---
+    # --- CABECERA CON AVATAR 1 (CHAT) ---
     col_avatar, col_texto = st.columns([1, 4]) 
     
     with col_avatar:
+        # Aquí buscamos "avatar_uce.png"
         if os.path.exists(AVATAR_URL):
             st.image(AVATAR_URL, width=280) 
         else:
