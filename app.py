@@ -165,7 +165,7 @@ def footer_personalizado():
 
     <div class="footer-credits">
         <div style="font-weight: bold; color: #002F6C;">
-            Hecho por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
+            Realizado por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
         </div>
         <div style="font-size: 11px; color: #666;">
             Proyecto Académico | Powered by Google Gemini API
@@ -266,7 +266,7 @@ def interfaz_chat():
 
     # 2. Columna Derecha: TODO EL CHAT + HEADER DEL CHAT
     with col_derecha_chat:
-        st.header("💬 Ing. Condoi")
+        st.header("💬 Asistente virtual")
         st.caption("Tu Tutor Virtual de la FICA - UCE")
         
         modelo, status = conseguir_modelo_disponible()
@@ -353,3 +353,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
