@@ -11,7 +11,6 @@ import re
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
-# Configuración de página
 st.set_page_config(
     page_title="Asistente Académico UCE", 
     page_icon="🏛️", 
@@ -30,7 +29,7 @@ if not os.path.exists(PDF_FOLDER):
 
 # RECURSOS GRÁFICOS
 LOGO_URL = "UCELOGO.png"
-AVATAR_URL = "avatar_uce.png" # <--- Asegúrate que esta imagen sea PNG transparente
+AVATAR_URL = "avatar_uce.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) ---
 
@@ -92,11 +91,17 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else ""
     except: return ""
 
-# --- 3. DISEÑO VISUAL (Footer Personalizado) ---
+# --- 3. DISEÑO VISUAL Y ESTILOS AVANZADOS ---
 
-def footer_personalizado():
+def inyectar_estilos():
+    """
+    Función única para controlar todo el CSS de la aplicación:
+    - Footer de créditos
+    - Tamaño de los avatares
+    """
     estilos = """
     <style>
+        /* --- FOOTER (CRÉDITOS) --- */
         .footer-credits {
             position: fixed;
             left: 0;
@@ -125,6 +130,27 @@ def footer_personalizado():
             padding-bottom: 70px;
         }
         footer {visibility: hidden;}
+
+        /* --- HACK PARA AVATARES MÁS GRANDES --- */
+        
+        /* 1. Hace más grande el contenedor del avatar */
+        [data-testid="stChatMessageAvatar"] {
+            width: 5rem !important;  /* Antes era pequeño, ahora 5rem (aprox 80px) */
+            height: 5rem !important;
+        }
+        
+        /* 2. Hace más grande la imagen dentro del contenedor */
+        [data-testid="stChatMessageAvatar"] img {
+            width: 5rem !important;
+            height: 5rem !important;
+            object-fit: contain; /* Asegura que no se recorte feo */
+        }
+
+        /* 3. Ajusta el icono de usuario genérico para que coincida */
+        [data-testid="stChatMessageAvatar"] svg {
+            width: 3.5rem !important;
+            height: 3.5rem !important;
+        }
     </style>
 
     <div class="footer-credits">
@@ -147,16 +173,12 @@ def sidebar_uce():
         except:
             st.header("UCE")
             
-        # --- SECCIÓN FICA (No Modificada) ---
         st.markdown("## Universidad Central del Ecuador")
-        
         st.markdown("### FICA")
         st.markdown("**Facultad de Ingeniería y Ciencias Aplicadas**")
         st.markdown("Carrera de Sistemas de Información")
-        # ------------------------------------
         
         st.divider()
-        
         st.title("Navegación")
         opcion = st.radio("Selecciona una opción:", ["💬 Chat Estudiantil", "📂 Gestión de Bibliografía"])
         
@@ -170,16 +192,13 @@ def interfaz_gestor_archivos():
     st.markdown("---")
     
     col1, col2 = st.columns([1, 2])
-    
     with col1:
         uploaded_files = st.file_uploader("Cargar documentos PDF", type="pdf", accept_multiple_files=True)
         if uploaded_files:
             if st.button("Procesar Documentos", type="primary"):
-                contador = 0
                 for file in uploaded_files:
                     guardar_archivo(file)
-                    contador += 1
-                st.success(f"✅ {contador} documentos añadidos a la base de conocimiento.")
+                st.success(f"✅ Documentos indexados.")
                 st.rerun()
 
     with col2:
@@ -196,23 +215,25 @@ def interfaz_gestor_archivos():
                     st.toast(f"Documento eliminado: {f}")
                     st.rerun()
     
-    footer_personalizado()
+    # Inyectamos estilos (Footer + Avatares Grandes)
+    inyectar_estilos()
 
 def interfaz_chat():
-    # --- ZONA DE BIENVENIDA CON AVATAR ---
-    col_avatar, col_texto = st.columns([1, 5])
+    # --- ZONA DE BIENVENIDA (Avatar Gigante) ---
+    col_avatar, col_texto = st.columns([1, 4]) # Ajusté la proporción para darle más espacio
     
     with col_avatar:
-        # Aquí mostramos el avatar un poco más grande
         if os.path.exists(AVATAR_URL):
-            st.image(AVATAR_URL, width=110) # Ajusta este número si lo quieres más grande
+            # AUMENTADO: De 110 a 220 pixels
+            st.image(AVATAR_URL, width=220) 
         else:
-            st.markdown("🤖")
+            st.markdown("# 🤖")
             
     with col_texto:
-        st.header("💬 Asistente Académico UCE")
+        st.title("Tutor Virtual FICA")
+        st.markdown("#### Facultad de Ingeniería y Ciencias Aplicadas - UCE")
         st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.")
-    # -------------------------------------
+    # -------------------------------------------
     
     modelo, status = conseguir_modelo_disponible()
     if not modelo:
@@ -233,21 +254,18 @@ def interfaz_chat():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Definir avatars para el chat
-    # Si la imagen existe, la usamos. Si no, usa el icono por defecto.
     avatar_bot = AVATAR_URL if os.path.exists(AVATAR_URL) else "assistant"
-    avatar_user = "👤" # Icono para el estudiante
+    avatar_user = "👤" 
 
     for message in st.session_state.messages:
-        # Lógica para elegir qué imagen mostrar en la burbuja
         icono = avatar_bot if message["role"] == "assistant" else avatar_user
-        
         with st.chat_message(message["role"], avatar=icono):
             st.markdown(message["content"])
 
-    footer_personalizado()
+    # Inyectamos estilos (Footer + Avatares Grandes)
+    inyectar_estilos()
 
-    if prompt := st.chat_input("¿En qué puedo ayudarte hoy?"):
+    if prompt := st.chat_input("Escribe tu consulta académica..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user", avatar=avatar_user):
             st.markdown(prompt)
@@ -261,18 +279,13 @@ def interfaz_chat():
                 contexto_pdf = buscar_informacion(prompt, textos, fuentes)
                 
                 prompt_sistema = f"""
-                Actúa como un tutor académico de la Universidad Central del Ecuador (UCE).
-                Tu tono debe ser formal, académico pero cercano y motivador (estilo "Omnium Potentior Est Sapientia").
+                Actúa como el Avatar Oficial de la Carrera de Sistemas de la UCE.
+                Eres servicial, técnico y preciso.
                 
-                CONTEXTO BIBLIOGRÁFICO:
-                {contexto_pdf}
-                
-                INSTRUCCIONES:
-                1. Si la respuesta está en los documentos, explícala con claridad y cita la fuente.
-                2. Si no está, usa tu conocimiento general para guiar al estudiante.
-                3. Trata al usuario como "compañero" o "estudiante".
-                
+                CONTEXTO (RAG): {contexto_pdf}
                 PREGUNTA: {prompt}
+                
+                Responde basándote en el contexto si existe. Cita fuentes.
                 """
                 
                 model = genai.GenerativeModel(modelo)
@@ -282,7 +295,7 @@ def interfaz_chat():
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
                 
             except Exception as e:
-                st.error(f"Error del sistema: {e}")
+                st.error(f"Error: {e}")
 
 # --- 4. MAIN ---
 
