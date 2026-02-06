@@ -30,11 +30,7 @@ if not os.path.exists(PDF_FOLDER):
 
 # --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
-
-# Avatar 1: Para el CHAT
 AVATAR_URL = "avatar_uce.png" 
-
-# Avatar 2: Para GESTIÓN DE BIBLIOGRAFÍA
 AVATAR_URL_GESTION = "avatar_uce2.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) --- 
@@ -97,11 +93,12 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else "" 
     except: return "" 
 
-# --- 3. DISEÑO VISUAL (Footer + CSS AVATAR) --- 
+# --- 3. DISEÑO VISUAL (Footer + Hacks CSS de Idioma y Avatar) --- 
 
 def footer_personalizado(): 
     estilos = """ 
     <style> 
+        /* Footer fijo */
         .footer-credits { 
             position: fixed; 
             left: 0; 
@@ -131,7 +128,7 @@ def footer_personalizado():
         } 
         footer {visibility: hidden;} 
 
-        /* CSS para el avatar del chat */
+        /* CSS Avatar Chat */
         [data-testid="stChatMessageAvatar"] {
             width: 85px !important;
             height: 85px !important;
@@ -146,6 +143,32 @@ def footer_personalizado():
         [data-testid="stChatMessageAvatar"] svg {
             width: 50px !important;
             height: 50px !important;
+        }
+
+        /* --- TRADUCCIÓN FORZADA DEL "DRAG AND DROP" (HACK CSS) --- */
+        
+        /* 1. Ocultar el texto en inglés original */
+        [data-testid="stFileUploader"] section > div > div > span,
+        [data-testid="stFileUploader"] section > div > div > small {
+            display: none !important;
+        }
+
+        /* 2. Inyectar texto en ESPAÑOL usando ::after */
+        [data-testid="stFileUploader"] section > div > div::after {
+            content: "📂 Arrastra y suelta tus archivos PDF aquí";
+            display: block;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        [data-testid="stFileUploader"] section > div > div::before {
+            content: "Límite: 200MB por archivo • Formato PDF";
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
     </style> 
 
@@ -186,14 +209,13 @@ def sidebar_uce():
 def interfaz_gestor_archivos(): 
     footer_personalizado()
     
-    # --- ENCABEZADO CON AVATAR 2 (GESTIÓN) ---
+    # Encabezado con Avatar 2 (Gestión)
     col_img, col_txt = st.columns([1, 4]) 
     with col_img:
-        # Aquí buscamos "avatar_uce2.png"
         if os.path.exists(AVATAR_URL_GESTION):
             st.image(AVATAR_URL_GESTION, width=280) 
         elif os.path.exists(AVATAR_URL):
-            st.image(AVATAR_URL, width=280) # Respaldo si no existe la 2
+            st.image(AVATAR_URL, width=280) 
         else:
             st.markdown("📂")
             
@@ -202,11 +224,11 @@ def interfaz_gestor_archivos():
         st.info("Sube aquí los sílabos, libros o papers para que los estudiantes puedan consultarlos.") 
     
     st.markdown("---") 
-    # ------------------------------------------------
     
     col1, col2 = st.columns([1, 2]) 
     
     with col1: 
+        # NOTA: El texto interno "Drag and drop" se cambia via CSS en footer_personalizado()
         uploaded_files = st.file_uploader("Cargar documentos PDF", type="pdf", accept_multiple_files=True) 
         if uploaded_files: 
             if st.button("Procesar Documentos", type="primary"): 
@@ -234,11 +256,9 @@ def interfaz_gestor_archivos():
 def interfaz_chat(): 
     footer_personalizado() 
     
-    # --- CABECERA CON AVATAR 1 (CHAT) ---
     col_avatar, col_texto = st.columns([1, 4]) 
     
     with col_avatar:
-        # Aquí buscamos "avatar_uce.png"
         if os.path.exists(AVATAR_URL):
             st.image(AVATAR_URL, width=280) 
         else:
@@ -247,8 +267,7 @@ def interfaz_chat():
     with col_texto:
         st.header("💬 Asistente Académico UCE") 
         st.caption("Plataforma de asistencia estudiantil basada en Inteligencia Artificial.") 
-    # -----------------------------------------------
-
+    
     modelo, status = conseguir_modelo_disponible() 
     if not modelo: 
         st.error(f"Error de conexión: {status}") 
@@ -271,7 +290,6 @@ def interfaz_chat():
 
     for message in st.session_state.messages: 
         icono = avatar_bot if message["role"] == "assistant" else avatar_user
-        
         with st.chat_message(message["role"], avatar=icono): 
             st.markdown(message["content"]) 
 
