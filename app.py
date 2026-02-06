@@ -284,11 +284,9 @@ def interfaz_chat():
     if not archivos:
         st.info("""
         **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
-        
-        Todavía no tengo documentos en mi memoria para estudiar contigo.
-        
-        * Si quieres conversar sobre ingeniería en general, ¡escribe abajo!
-        * Si necesitas que revise el sílabo, ve a **"Gestión de Bibliografía"** y dame los archivos.
+     
+        * Si quieres conversar sobre algún tema en general, ¡escribe abajo!
+        * Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
         """)
     
     if "messages" not in st.session_state:
@@ -352,3 +350,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
