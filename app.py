@@ -30,7 +30,7 @@ if not os.path.exists(PDF_FOLDER):
 
 # --- RECURSOS GRÁFICOS ---
 LOGO_URL = "UCELOGO.png"
-AVATAR_URL = "avatar_uce.png" 
+AVATAR_URL = "avatar_uce.gif" 
 AVATAR_URL_GESTION = "avatar_uce2.png" 
 
 # --- 2. FUNCIONES DE LÓGICA (Backend) --- 
@@ -340,6 +340,7 @@ def main():
 
 if __name__ == "__main__": 
     main()
+
 
 
 
