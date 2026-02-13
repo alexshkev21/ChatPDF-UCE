@@ -103,18 +103,24 @@ def buscar_informacion(pregunta, textos, fuentes):
         return contexto if hay_relevancia else ""
     except: return ""
 
-# --- 3. DISEÑO VISUAL (CSS) ---
+# --- 3. DISEÑO VISUAL (CSS AJUSTADO PARA PANTALLA FIJA) ---
 
 def estilos_globales():
     estilos = """
     <style>
-        /* 1. Ocultar scroll general */
+        /* 1. Ocultar scroll general de la página */
         ::-webkit-scrollbar {
             width: 8px;
             background: transparent;
         }
 
-        /* 2. Footer Fijo */
+        /* 2. Reducir padding superior drásticamente para subir todo */
+        .block-container {
+            padding-top: 2rem !important; /* Más arriba */
+            padding-bottom: 0rem !important;
+        }
+
+        /* 3. Footer Fijo Minimalista */
         .footer-credits {
             position: fixed;
             left: 0;
@@ -123,23 +129,23 @@ def estilos_globales():
             background-color: #ffffff;
             color: #444;
             text-align: center;
-            font-size: 13px;
-            padding: 8px;
+            font-size: 11px;
+            padding: 5px;
             border-top: 2px solid #C59200;
             z-index: 99999;
             font-family: sans-serif;
         }
         
-        /* 3. Ajuste input */
+        /* 4. Input ajustado */
         div[data-testid="stBottom"] {
-            padding-bottom: 40px; 
+            padding-bottom: 35px; 
             background-color: transparent;
         }
 
-        /* 4. Estilos Burbujas Chat */
+        /* 5. Estilos Burbujas Chat */
         [data-testid="stChatMessageAvatar"] {
-            width: 45px !important;
-            height: 45px !important;
+            width: 40px !important;
+            height: 40px !important;
             border-radius: 50% !important;
         }
         [data-testid="stChatMessageAvatar"] img {
@@ -159,17 +165,17 @@ def estilos_globales():
             margin-bottom: 5px;
         }
         
-        /* CSS Extra para alinear verticalmente el logo y el título */
+        /* CSS Extra para centrar verticalmente elementos */
         [data-testid="stVerticalBlock"] > [style*="flex-direction: row"] {
             align-items: center;
         }
     </style>
 
     <div class="footer-credits">
-        <div style="font-weight: bold; color: #002F6C; font-size: 12px;">
+        <div style="font-weight: bold; color: #002F6C; font-size: 11px;">
             Hecho por: Altamirano Isis, Castillo Alexander, Chalán David, Flores Bryan, Cabezas Jhampierre
         </div>
-        <div style="font-size: 10px; color: #666;">
+        <div style="font-size: 9px; color: #666;">
             Proyecto Académico | Powered by Google Gemini API
         </div>
     </div>
@@ -180,7 +186,6 @@ def estilos_globales():
 
 def sidebar_uce():
     with st.sidebar:
-        # Quitamos el logo de aquí porque ahora estará en el título principal
         st.markdown("### UCE - FICA")
         st.divider()
         st.title("Navegación")
@@ -191,13 +196,11 @@ def sidebar_uce():
 def interfaz_gestor_archivos():
     estilos_globales()
     
-    # Encabezado con Logo a la izquierda del título (Usando columnas anidadas)
-    col_hl, col_ht = st.columns([0.8, 5]) # Proporción: Logo pequeño, Texto grande
+    col_hl, col_ht = st.columns([0.8, 5])
     with col_hl:
         if os.path.exists(LOGO_URL): st.image(LOGO_URL, width=90)
     with col_ht:
         st.header("Gestión de Bibliografía")
-    # -----------------------------------------------------------------------
     
     col_avatar, col_contenido = st.columns([1, 3])
     
@@ -245,13 +248,14 @@ def interfaz_chat():
     
     col_izquierda, col_derecha = st.columns([1.2, 3])
     
-    # === COLUMNA 1: AVATAR ESTÁTICO ===
+    # === COLUMNA 1: AVATAR ESTÁTICO (Siempre visible) ===
     with col_izquierda:
         if os.path.exists(AVATAR_URL):
             img_b64 = get_img_as_base64(AVATAR_URL)
+            # Centrado y fijo
             st.markdown(f"""
-                <div style="display: flex; justify-content: center; align-items: center; height: 90vh;">
-                    <img src="data:image/gif;base64,{img_b64}" style="width: 100%; max-width: 450px; border-radius: 20px;">
+                <div style="display: flex; justify-content: center; align-items: center; height: 85vh;">
+                    <img src="data:image/gif;base64,{img_b64}" style="width: 100%; max-width: 400px; border-radius: 20px;">
                 </div>
             """, unsafe_allow_html=True)
         else:
@@ -259,28 +263,31 @@ def interfaz_chat():
 
     # === COLUMNA 2: ÁREA DE INTERACCIÓN ===
     with col_derecha:
-        # 1. ENCABEZADO (Logo UCE + Títulos) --- AQUÍ ESTÁ EL CAMBIO ---
-        # Creamos sub-columnas para poner el logo junto al texto
-        col_hl, col_ht = st.columns([0.8, 5]) # [Logo pequeño, Texto grande]
+        # 1. ENCABEZADO COMPACTO
+        col_hl, col_ht = st.columns([0.6, 5]) 
 
         with col_hl:
             if os.path.exists(LOGO_URL):
-                st.image(LOGO_URL, width=90) # Logo ajustado
+                st.image(LOGO_URL, width=80) 
 
         with col_ht:
-            st.markdown("## 💬 Asistente Virtual") 
-            st.markdown("#### Ing. Condoi - Tu Tutor Virtual de la FICA")
-        # -------------------------------------------------------------
+            st.markdown("""
+                <h2 style='margin-bottom: 0px; padding-top: 0px; color: #002F6C;'>💬 Asistente Virtual</h2>
+                <p style='margin-top: 0px; color: gray; font-size: 14px;'>Ing. Condoi - Tu Tutor Virtual de la FICA</p>
+            """, unsafe_allow_html=True)
         
-        # 2. MENSAJE DE BIENVENIDA FIJO
-        st.info("""
-        **🦅 ¡Hola compañero! Soy el Ing. Condoi.**
-        Si quieres conversar sobre algún tema en general, ¡escribe abajo!
-        Si necesitas que revise información específica, ve a **"Gestión de Bibliografía"** y dame los archivos.
-        """)
+        # 2. BIENVENIDA (Siempre visible)
+        st.markdown("""
+        <div style="background-color: #f0f2f6; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 14px;">
+            <strong>🦅 ¡Hola compañero! Soy el Ing. Condoi.</strong><br>
+            Si quieres conversar sobre algún tema en general, ¡escribe abajo!
+            Si necesitas que revise información específica, ve a <b>"Gestión de Bibliografía"</b> y dame los archivos.
+        </div>
+        """, unsafe_allow_html=True)
 
-        # 3. VENTANA DE CHAT (SCROLLEABLE)
-        contenedor_chat = st.container(height=480, border=True)
+        # 3. VENTANA DE CHAT (REDUCIDA A 380px PARA QUE QUEPA TODO)
+        # Ajustamos height para que no empuje el contenido hacia arriba
+        contenedor_chat = st.container(height=380, border=True)
 
         modelo, status = conseguir_modelo_disponible()
         if not modelo:
@@ -299,7 +306,7 @@ def interfaz_chat():
                 with st.chat_message(message["role"], avatar=icono):
                     st.markdown(message["content"])
 
-        # 4. INPUT DE PROMPTS
+        # 4. INPUT (Fijo abajo)
         if prompt := st.chat_input("Escribe tu consulta aquí..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             st.rerun()
